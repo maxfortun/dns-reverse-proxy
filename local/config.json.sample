@@ -1,0 +1,37 @@
+{
+    "bind": {
+        "address": "0.0.0.0",
+        "port": "53"
+    },
+    "defaults": {
+        "servers": {
+            "port": "53"
+        }
+    },
+    "zones": {
+        "": {
+            "servers": [
+                {
+                    "address": "8.8.8.8"
+                }
+            ]
+        },
+        "sub1.doma.in": {
+            "servers": [
+                {
+                    "address": "127.0.0.1",
+                    "port": "5053"
+                }
+            ]
+        },
+        "sub2.doma.in": {
+            "servers": [
+                {
+                    "address": "127.0.0.1",
+                    "port": "6053"
+                }
+            ]
+        }
+    }
+}
+
