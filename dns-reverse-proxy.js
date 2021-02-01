@@ -39,13 +39,15 @@ function getProxy(name) {
     let proxy = null;
 
     tokens.find(token => {
-        if(zone[".proxy"]) {
-            proxy = zone[".proxy"];
-        }
+        debug(name, "Checking proxy '"+token+"'");
         if(!zone[token]) {
             return true;
         }
         zone = zone[token];
+        if(zone[".proxy"]) {
+            proxy = zone[".proxy"];
+            debug(name, "Assign proxy", proxy.id);
+        }
         return false;
     });
 
@@ -92,6 +94,7 @@ async function onUDPMessage(request, rinfo) {
 async function sendResponse(response, rinfo) {
     if(!response) {
         debug("Dropping", rinfo);
+        return;
     }
     debug("Responding", response);
     udp.send(response, 0, response.length, rinfo.port, rinfo.address);
