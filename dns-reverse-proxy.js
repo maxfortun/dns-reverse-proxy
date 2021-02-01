@@ -1,10 +1,16 @@
 #!/usr/bin/env node
 
-const debug = require('debug')('dns-reverse-proxy');
+const debug = require('debug')('dns-reverse-proxy:debug');
+const info = require('debug')('dns-reverse-proxy:info');
+const warn = require('debug')('dns-reverse-proxy:warn');
+const error = require('debug')('dns-reverse-proxy:error');
 
 let context = { zones: {}, rates: {} };
 
 let config = context.config = require('./lib/local-config');
+
+context.config.bind.port = context.config.bind.port || process.env.BIND_PORT;
+context.config.bind.address = context.config.bind.address || process.env.BIND_ADDRESS;
 
 let Server = require('./lib/server');
 let Proxy = require('./lib/proxy');
@@ -39,14 +45,12 @@ function getProxy(name) {
     let proxy = null;
 
     tokens.find(token => {
-        debug(name, "Checking proxy '"+token+"'");
         if(!zone[token]) {
             return true;
         }
         zone = zone[token];
         if(zone[".proxy"]) {
             proxy = zone[".proxy"];
-            debug(name, "Assign proxy", proxy.id);
         }
         return false;
     });
@@ -59,22 +63,20 @@ const dgram = require('dgram');
 const packet = require('native-dns-packet');
 
 function onUDPListening() {
-    debug("Listening", context);
+    info("Listening", context);
 }
 
 function onUDPError(err) {
-    debug("Error:", err);
+    error("Error:", err);
 }
 
 function onUDPClose() {
-    debug("Socket closed");
+    warn("Socket closed");
 }
 
 async function onUDPMessage(request, rinfo) {
-    debug("Requester", rinfo);
-
     const query = packet.parse(request);
-    debug("Query:", query);
+    info("Request:", JSON.stringify(query), JSON.stringify(rinfo));
 
     let proxy = null;
     query.question.forEach(question => {
@@ -93,10 +95,11 @@ async function onUDPMessage(request, rinfo) {
 
 async function sendResponse(response, rinfo) {
     if(!response) {
-        debug("Dropping", rinfo);
+        warn("Dropping", rinfo);
         return;
     }
-    debug("Responding", response);
+    const query = packet.parse(response);
+    info("Response", JSON.stringify(query), JSON.stringify(rinfo));
     udp.send(response, 0, response.length, rinfo.port, rinfo.address);
 }
 
@@ -107,5 +110,5 @@ udp.on('error', onUDPError);
 udp.on('message', onUDPMessage);
 udp.on('close', onUDPClose);
 
-udp.bind(context.config.bind.port || process.env.BIND_PORT, context.config.bind.address || process.env.BIND_ADDRESS);
+udp.bind(context.config.bind.port, context.config.bind.address);
 
