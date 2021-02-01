@@ -104,5 +104,5 @@ udp.on('error', onUDPError);
 udp.on('message', onUDPMessage);
 udp.on('close', onUDPClose);
 
-udp.bind(context.config.bind.port, context.config.bind.address);
+udp.bind(context.config.bind.port || process.env.BIND_PORT, context.config.bind.address || process.env.BIND_ADDRESS);
 
