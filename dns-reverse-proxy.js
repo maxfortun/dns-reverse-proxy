@@ -2,7 +2,7 @@
 
 const debug = require('debug')('dns-reverse-proxy');
 
-let context = { zones: {} };
+let context = { zones: {}, rates: {} };
 
 let config = context.config = require('./lib/local-config');
 
@@ -69,7 +69,7 @@ function onUDPClose() {
 }
 
 async function onUDPMessage(request, rinfo) {
-    debug("Message", request, rinfo);
+    debug("Requester", rinfo);
 
     const query = packet.parse(request);
     debug("Query:", query);
@@ -90,6 +90,9 @@ async function onUDPMessage(request, rinfo) {
 }
 
 async function sendResponse(response, rinfo) {
+    if(!response) {
+        debug("Dropping", rinfo);
+    }
     debug("Responding", response);
     udp.send(response, 0, response.length, rinfo.port, rinfo.address);
 }
