@@ -98,8 +98,8 @@ async function sendResponse(response, rinfo) {
         warn("Dropping", rinfo);
         return;
     }
-    const query = packet.parse(response);
-    info("Response", JSON.stringify(query), JSON.stringify(rinfo));
+    const responseObject = packet.parse(response);
+    info("Response:", JSON.stringify(responseObject), JSON.stringify(rinfo));
     udp.send(response, 0, response.length, rinfo.port, rinfo.address);
 }
 
